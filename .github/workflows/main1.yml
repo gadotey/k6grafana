@@ -1,0 +1,30 @@
+name: Load Grafana Dashboards
+on: [push, pull_request]
+jobs:
+  load-dashboards:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Grafana provisioning
+        run: |
+          mkdir -p /etc/grafana/provisioning/dashboards
+          cp grafana-dashboard.yaml /etc/grafana/provisioning/dashboards/
+
+      - name: Validate Grafana dashboard configuration
+        run: |
+          if ! grep -q 'apiVersion: 1' /etc/grafana/provisioning/dashboards/grafana-dashboard.yaml; then
+            echo "Invalid Grafana dashboard configuration"
+            exit 1
+          fi
+          if ! grep -q 'datasource: Prometheus' /etc/grafana/provisioning/dashboards/grafana-dashboard.yaml; then
+            echo "Invalid Grafana dashboard configuration"
+            exit 1
+          fi
+
+      - name: Start Grafana container
+        run: |
+          docker run -d --name grafana -p 3000:3000 \
+            -v /etc/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards \
+            grafana/grafana:latest  
