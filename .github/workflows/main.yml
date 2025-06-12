@@ -1,5 +1,5 @@
 name: Load testing workflows
-on: [push, workflows_dispatch]
+on: [push, workflow_dispatch]
 
 jobs:
   load-test:
@@ -12,4 +12,4 @@ jobs:
         uses: k6io/k6-load-action@v1
         with:
           filename: script.js
-       
+          flags: --out influxdb=http://192.168.1.161:8086       
